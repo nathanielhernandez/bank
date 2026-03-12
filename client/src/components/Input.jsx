@@ -1,12 +1,11 @@
-import React from "react";
-
-const Input = ({ name, placeholder, onChange }) => {
+const Input = ({ name, placeholder, onChange, ref }) => {
   return (
     <input
+      ref={ref}
       name={name}
       placeholder={placeholder}
       onChange={onChange}
-      className="border border-zinc-400 px-2 py-2 rounded-xl bg-zinc-300"
+      className="border border-slate-400 px-2 py-2 rounded-xl bg-slate-300"
     />
   );
 };

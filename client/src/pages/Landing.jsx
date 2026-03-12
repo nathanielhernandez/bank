@@ -1,9 +1,13 @@
 import { useState } from "react";
 import { useGame } from "../context/GameContext";
 import { IoChevronBackOutline } from "react-icons/io5";
+import { AnimatePresence, motion } from "motion/react";
 import Button from "../components/Button";
 import Header from "../components/Header";
 import Input from "../components/Input";
+
+const MotionButton = motion.create(Button);
+const MotionInput = motion.create(Input);
 
 const Landing = () => {
   const [landing, setLanding] = useState("select");
@@ -25,37 +29,42 @@ const Landing = () => {
   return (
     <div className="flex flex-col justify-center gap-10">
       <Header />
-      <div className="w-full bg-zinc-200 p-4 rounded-2xl flex flex-col gap-4 drop-shadow-xl">
-        {landing === "select" && (
-          <>
-            <Button onClick={() => setLanding("create")}>Create Game</Button>
-            <Button onClick={() => setLanding("join")}>Join Game</Button>
-          </>
-        )}
-        {(landing === "create" || landing === "join") && (
-          <>
-            <button
-              className="flex items-center text-zinc-600 text-lg leading-none"
-              onClick={() => setLanding("select")}
-            >
-              <IoChevronBackOutline size={22} /> Back
-            </button>
-            <Input
-              name="name"
-              placeholder="Enter your name"
-              onChange={(e) => handleChange(e)}
-            />
-            {landing === "join" && (
+      <motion.div
+        layout
+        transition={{ layout: { duration: 0.2, ease: "easeInOut" } }}
+        className="w-full bg-zinc-200 p-4 rounded-2xl drop-shadow-xl"
+      >
+        <AnimatePresence mode="wait">
+          {landing === "select" ? (
+            <div className="flex flex-col gap-4">
+              <Button onClick={() => setLanding("create")}>Create Game</Button>
+              <Button onClick={() => setLanding("join")}>Join Game</Button>
+            </div>
+          ) : (
+            <div className="flex flex-col gap-4">
+              <button
+                className="flex items-center text-zinc-600 text-lg leading-none"
+                onClick={() => setLanding("select")}
+              >
+                <IoChevronBackOutline size={22} /> Back
+              </button>
               <Input
-                name="roomCode"
-                placeholder="Enter room code"
+                name="name"
+                placeholder="Enter your name"
                 onChange={(e) => handleChange(e)}
               />
-            )}
-            <Button onClick={handleClick}>{landing} Game</Button>
-          </>
-        )}
-      </div>
+              {landing === "join" && (
+                <Input
+                  name="roomCode"
+                  placeholder="Enter room code"
+                  onChange={(e) => handleChange(e)}
+                />
+              )}
+              <MotionButton onClick={handleClick}>{landing} Game</MotionButton>
+            </div>
+          )}
+        </AnimatePresence>
+      </motion.div>
     </div>
   );
 };
