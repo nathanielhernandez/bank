@@ -1,8 +1,8 @@
 import { useGame } from "../context/GameContext";
 import { isTurn, getCurrentPlayer } from "../utils/utils";
 import { buttons as rawButtons } from "../utils/buttons";
+import Card from "../components/Card";
 import Button from "../components/Button";
-import { AnimatePresence, motion } from "motion/react";
 
 const Game = () => {
   const { game, addRoll, bankPlayer } = useGame();
@@ -17,6 +17,8 @@ const Game = () => {
     const isDisabled = button.title === "Doubles";
     return { ...button, disabled: isDisabled, color: "amber" };
   });
+
+  const playersSorted = game.players.sort((a, b) => b.score - a.score);
   return (
     <>
       <div
@@ -53,8 +55,8 @@ const Game = () => {
             </div>
           ))}
 
-        <div initial={{ y: "100%" }} animate={{ y: 0 }} exit={{ y: "100%" }}>
-          <div className="h-auto m-auto">
+        <div>
+          <div className="flex">
             <Button
               color={"green"}
               className={"px-6"}
@@ -66,8 +68,8 @@ const Game = () => {
         </div>
       </div>
 
-      <div className="relative flex flex-col gap-2">
-        <div className="grid grid-cols-3 items-center bg-zinc-50">
+      <div className="fixed w-screen top-0 left-0 h-10">
+        <div className="grid grid-cols-3">
           <div className="flex flex-col justify-center">
             <div>Round</div>
             <div>
@@ -84,7 +86,9 @@ const Game = () => {
             {game.isLive ? <div>Live</div> : <div>Not Live</div>}
           </div>
         </div>
-        {game.players.map((player) => (
+      </div>
+      <div className="mt-10">
+        {playersSorted.map((player) => (
           <div
             key={player.id}
             className={`p-4 bg-zinc-50 ${player.id === getCurrentPlayer(game).id && `border-l-8 border-red-500`}`}
