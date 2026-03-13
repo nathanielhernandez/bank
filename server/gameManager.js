@@ -21,6 +21,7 @@ export const createGame = (player, numRounds) => {
     currentPlayerIndex: 0,
     currentRoundScore: 0,
     rollCount: 0,
+    isLive: false,
   };
   games.set(code, game);
   return game;
@@ -73,12 +74,16 @@ export const addRoll = (gameCode, rollTotal, isDouble, requesterId) => {
 
   // destructure oldGameState to newGameState for updating
   let newGameState;
+  if (oldGameState.rollCount + 1 >= 3)
+    oldGameState = { ...oldGameState, isLive: true };
 
   // add check for all players banked
   let nextPlayerIndex = getNextPlayerIndex(
     oldGameState.currentPlayerIndex,
     oldGameState.players,
   );
+
+  console.log("roll count: " + oldGameState.rollCount);
 
   // check if we're live (on rolls 4+), handle not live logic
   if (oldGameState.rollCount < 3) {
@@ -118,8 +123,9 @@ export const addRoll = (gameCode, rollTotal, isDouble, requesterId) => {
           })),
           currentPlayerIndex: nextPlayerIndex,
           round: oldGameState.round + 1,
-          rollCount: 1,
+          rollCount: 0,
           currentRoundScore: 0,
+          isLive: false,
         };
       }
       // increase round number by 1
@@ -152,17 +158,13 @@ export const bankPlayer = (gameCode, requesterId) => {
   // check if game exists
   if (!oldGameState) throw Error(`Unable to find game with id ${gameCode}`);
   if (oldGameState.phase !== "in-game") throw Error(`Currently not in-game`);
-  if (oldGameState.players[oldGameState.currentPlayerIndex].id !== requesterId)
-    throw Error("It's not your turn!");
-  if (oldGameState.players[oldGameState.currentPlayerIndex].isBanked)
+  const requestingPlayer = oldGameState.players.find(
+    (p) => p.id === requesterId,
+  );
+  if (requestingPlayer.isBanked)
     throw Error(`Player ${requesterId} is already banked!`);
 
-  const nextPlayerIndex = getNextPlayerIndex(
-    oldGameState.currentPlayerIndex,
-    oldGameState.players,
-  );
   let newGameState;
-
   let updatedPlayers = oldGameState.players.map((player) =>
     player.id === requesterId
       ? {
@@ -171,6 +173,22 @@ export const bankPlayer = (gameCode, requesterId) => {
           score: player.score + oldGameState.currentRoundScore,
         }
       : player,
+  );
+
+  if (
+    requesterId !== oldGameState.players[oldGameState.currentPlayerIndex].id
+  ) {
+    newGameState = {
+      ...oldGameState,
+      players: updatedPlayers,
+    };
+    games.set(gameCode, newGameState);
+    return newGameState;
+  }
+
+  const nextPlayerIndex = getNextPlayerIndex(
+    oldGameState.currentPlayerIndex,
+    oldGameState.players,
   );
 
   newGameState = {
@@ -192,8 +210,9 @@ export const bankPlayer = (gameCode, requesterId) => {
         currentPlayerIndex:
           (oldGameState.currentPlayerIndex + 1) % oldGameState.players.length,
         round: oldGameState.round + 1,
-        rollCount: 1,
+        rollCount: 0,
         currentRoundScore: 0,
+        isLive: false,
       };
     }
   }
